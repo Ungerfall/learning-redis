@@ -30,3 +30,4 @@ msbuild.log
 msbuild.err
 msbuild.wrn
 RedisPractice/.vs/RedisPractice/config/applicationhost.config
+RedisPractice/.vs/RedisPractice/DesignTimeBuild/.dtbcache.v2

@@ -1,6 +1,10 @@
-﻿@{
-    ViewData["Title"] = "Last visit information";
+﻿@model AppInfoViewModel
+
+@{
+	ViewData["Title"] = "Information";
 }
+
 <h1>@ViewData["Title"]</h1>
 
-<p>Use this element to add information about last visit timestamp.</p>
+<p>Last request time by current user: @Model.CurrentUserLastRequestTime</p>
+<p>Last request time by all users   : @Model.LastRequestTime</p>

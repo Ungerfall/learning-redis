@@ -1,0 +1,17 @@
+﻿@model CommandViewModel
+
+@{
+	ViewData["Title"] = "Execute command";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form method="post">
+	<label>Команда:</label><br />
+	<input type="text" name="Command" value="@Model.Command" />
+	<input type="submit" value="Выполнить" />
+</form>
+
+<br />
+<label>Результат:</label><br />
+<textarea readonly rows="10" style="width: 450px">@Model.Result</textarea>
