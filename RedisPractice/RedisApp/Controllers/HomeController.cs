@@ -1,9 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Threading.Tasks;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using RedisApp.Models;
 using RedisApp.Utils;
@@ -14,13 +12,11 @@ namespace RedisApp.Controllers
 	{
 		private readonly ILogger<HomeController> _logger;
 		private readonly IRedisKeyResolver _keyResolver;
-		private readonly IDistributedCache _cache;
 
-		public HomeController(ILogger<HomeController> logger, IRedisKeyResolver keyResolver, IDistributedCache cache)
+		public HomeController(ILogger<HomeController> logger, IRedisKeyResolver keyResolver)
 		{
 			_logger = logger;
 			_keyResolver = keyResolver;
-			_cache = cache;
 		}
 
 		public IActionResult Index()
