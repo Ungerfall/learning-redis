@@ -31,6 +31,7 @@ namespace RedisApp
 			{
 				options.Configuration = Configuration.GetConnectionString("Redis");
 			});
+			services.AddSession();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,6 +50,20 @@ namespace RedisApp
 			app.UseRouting();
 
 			app.UseAuthorization();
+
+			app.UseSession();
+
+			app.Use(async (context, next) =>
+			{
+				var tempSessionKey = Keys.LastRequestTime + "Temp";
+
+				await context.Session.LoadAsync();
+				context.Session.SetString(Keys.LastRequestTime, context.Session.GetString(tempSessionKey) ?? string.Empty);
+				context.Session.SetString(tempSessionKey, DateTime.Now.ToString());
+				await context.Session.CommitAsync();
+
+				await next.Invoke();
+			});
 
 			app.Use(async (context, next) =>
 			{

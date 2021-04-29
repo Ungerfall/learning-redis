@@ -33,6 +33,9 @@ namespace RedisApp.Controllers
 
 			appInfoViewModel.LastRequestTime = await _cache.GetStringAsync(_keyResolver.GetKeyWithPrefix(Keys.LastRequestTime));
 
+			await HttpContext.Session.LoadAsync();
+			appInfoViewModel.CurrentUserLastRequestTime = HttpContext.Session.GetString(Keys.LastRequestTime);
+
 			return View(appInfoViewModel);
 		}
 
