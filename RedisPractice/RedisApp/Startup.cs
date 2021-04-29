@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RedisApp.Utils;
 using Microsoft.AspNetCore.Http;
+using StackExchange.Redis;
 
 namespace RedisApp
 {
@@ -32,10 +33,11 @@ namespace RedisApp
 				options.Configuration = Configuration.GetConnectionString("Redis");
 			});
 			services.AddSession();
+			services.AddSingleton<IConnectionMultiplexer>(collection => ConnectionMultiplexer.Connect(Configuration.GetConnectionString("Redis")));
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IRedisKeyResolver keyResolver, IDistributedCache cache)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IRedisKeyResolver keyResolver, IDistributedCache cache, IConnectionMultiplexer redis)
 		{
 			if (env.IsDevelopment())
 			{
@@ -73,6 +75,14 @@ namespace RedisApp
 					keyResolver.GetKeyWithPrefix(Keys.LastRequestTime),
 					DateTime.Now.ToString(),
 					new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromHours(1) });
+			});
+
+			app.Use(async (context, next) =>
+			{
+				await next.Invoke();
+
+				var db = redis.GetDatabase();
+				await db.StringIncrementAsync(new RedisKey("Counter"), flags: CommandFlags.FireAndForget);
 			});
 
 			app.UseEndpoints(endpoints =>

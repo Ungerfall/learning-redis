@@ -6,6 +6,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using RedisApp.Models;
 using RedisApp.Utils;
+using StackExchange.Redis;
 
 namespace RedisApp.Controllers
 {
@@ -14,12 +15,14 @@ namespace RedisApp.Controllers
 		private readonly ILogger<HomeController> _logger;
 		private readonly IRedisKeyResolver _keyResolver;
 		private readonly IDistributedCache _cache;
+		private readonly IConnectionMultiplexer _redis;
 
-		public HomeController(ILogger<HomeController> logger, IRedisKeyResolver keyResolver, IDistributedCache cache)
+		public HomeController(ILogger<HomeController> logger, IRedisKeyResolver keyResolver, IDistributedCache cache, IConnectionMultiplexer redis)
 		{
 			_logger = logger;
 			_keyResolver = keyResolver;
 			_cache = cache;
+			_redis = redis;
 		}
 
 		public IActionResult Index()
@@ -35,6 +38,9 @@ namespace RedisApp.Controllers
 
 			await HttpContext.Session.LoadAsync();
 			appInfoViewModel.CurrentUserLastRequestTime = HttpContext.Session.GetString(Keys.LastRequestTime);
+
+			var redisValue = await _redis.GetDatabase().StringGetAsync(new RedisKey("Counter"));
+			appInfoViewModel.RedisCounter = redisValue.ToString();
 
 			return View(appInfoViewModel);
 		}
