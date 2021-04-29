@@ -27,6 +27,10 @@ namespace RedisApp
 		{
 			services.AddControllersWithViews();
 			services.AddSingleton<IRedisKeyResolver, RedisKeyResolver>();
+			services.AddStackExchangeRedisCache(options =>
+			{
+				options.Configuration = Configuration.GetConnectionString("Redis");
+			});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,6 +49,16 @@ namespace RedisApp
 			app.UseRouting();
 
 			app.UseAuthorization();
+
+			app.Use(async (context, next) =>
+			{
+				await next.Invoke();
+
+				await cache.SetStringAsync(
+					keyResolver.GetKeyWithPrefix(Keys.LastRequestTime),
+					DateTime.Now.ToString(),
+					new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromHours(1) });
+			});
 
 			app.UseEndpoints(endpoints =>
 			{
