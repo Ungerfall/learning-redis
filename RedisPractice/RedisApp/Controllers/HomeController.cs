@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -59,8 +60,23 @@ namespace RedisApp.Controllers
 
 
 		[HttpPost]
-		public IActionResult Execute(CommandViewModel viewModel)
+		public async Task<IActionResult> Execute(CommandViewModel viewModel)
 		{
+			var commandParts = viewModel.Command.Split(' ');
+			var mainCommand = commandParts.FirstOrDefault();
+
+			if (!string.IsNullOrWhiteSpace(mainCommand))
+			{
+				var args = commandParts.Skip(1).Where(str => !string.IsNullOrWhiteSpace(str)).ToArray();
+
+				var redisResult = await _redis.GetDatabase().ExecuteAsync(mainCommand, args);
+				var redisResultType = redisResult.GetType();
+
+				viewModel.Result = redisResult.Type == ResultType.MultiBulk
+					? string.Join(System.Environment.NewLine, (string[])redisResult)
+					: redisResult.ToString();
+			}
+
 			return View(viewModel);
 		}
 	}
